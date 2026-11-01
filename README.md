@@ -83,6 +83,22 @@ web_creditos/
 
    Abre `http://127.0.0.1:5000`, registra una cuenta e inicia sesión.
 
+## Uso del software
+
+1. **Crear una cuenta.** En la pantalla inicial selecciona **Regístrate**. Completa el nombre, usuario, correo y contraseña. La contraseña se guarda cifrada en SQL Server.
+
+2. **Iniciar sesión.** Ingresa con el usuario o correo electrónico registrado. Las páginas de CrediVision requieren una sesión activa.
+
+3. **Revisar el panel.** El resumen muestra el tamaño del dataset, la distribución de aprobaciones y las métricas principales de los tres modelos.
+
+4. **Generar una predicción.** Abre **Nueva solicitud**, selecciona el modelo que deseas utilizar y completa los campos del perfil, condiciones del crédito y activos declarados. Al enviar el formulario se mostrará la clasificación y la probabilidad estimada de aprobación.
+
+5. **Comparar modelos.** En **Comparar modelos** consulta las métricas de evaluación y la matriz de confusión de Regresión Logística, Árbol de Decisión y Random Forest para elegir el modelo más adecuado.
+
+6. **Reentrenar cuando sea necesario.** Desde el panel puedes pulsar **Reentrenar localmente**. La aplicación vuelve a generar los archivos de modelos y el resumen de métricas usando el dataset procesado actual.
+
+7. **Cerrar sesión.** Utiliza el botón **Cerrar sesión** de la barra lateral al terminar de usar la aplicación.
+
 ## Base de datos
 
 El esquema crea las tablas `usuarios`, `modelos` y `predicciones`. Actualmente la aplicación usa `usuarios` para la autenticación. Las tablas de modelos y predicciones están preparadas para una futura implementación del historial.

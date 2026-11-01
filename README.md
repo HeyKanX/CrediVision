@@ -1,6 +1,10 @@
-# CrediVision
+# CrediVision · Versión final 1.0
 
 Aplicación web en Flask para estimar la aprobación de solicitudes de crédito mediante modelos de Machine Learning. Incluye preparación del dataset, entrenamiento de modelos, comparación de métricas y autenticación de usuarios con SQL Server.
+
+## Estado de la versión
+
+La versión 1.0 reúne el flujo completo de CrediVision: acceso de usuarios, predicción, comparación de modelos, guardado de resultados, historial individual, detalle de registros y panel personal. La información de conexión permanece fuera del repositorio en el archivo local `.env`.
 
 ## Funcionalidades
 

@@ -117,7 +117,7 @@ def guardar_prediccion(solicitud: dict, modelo_id: int, aprobada: bool, probabil
     """Persiste la solicitud evaluada para el historial del usuario autenticado."""
     with conexion() as conexion_sql:
         cursor = conexion_sql.cursor()
-        cursor.execute(
+        fila = cursor.execute(
             """
             INSERT INTO dbo.predicciones (
                 usuario_id, modelo_id, numero_dependientes, nivel_educativo,
@@ -126,6 +126,7 @@ def guardar_prediccion(solicitud: dict, modelo_id: int, aprobada: bool, probabil
                 valor_activos_comerciales, valor_activos_lujo, valor_activos_bancarios,
                 resultado, probabilidad_aprobacion
             )
+            OUTPUT INSERTED.id
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             session["usuario_id"],
@@ -133,9 +134,10 @@ def guardar_prediccion(solicitud: dict, modelo_id: int, aprobada: bool, probabil
             *(solicitud[campo] for campo in CAMPOS_SOLICITUD),
             "Aprobado" if aprobada else "Rechazado",
             probabilidad,
-        )
-        fila = cursor.execute("SELECT CAST(SCOPE_IDENTITY() AS BIGINT) AS id").fetchone()
-    return int(fila.id)
+        ).fetchone()
+        if not fila:
+            raise RuntimeError("SQL Server no devolvió el identificador de la predicción guardada.")
+    return int(fila[0])
 
 
 def obtener_resumen_personal(usuario_id: int) -> dict:

@@ -7,10 +7,11 @@ Aplicación web en Flask para estimar la aprobación de solicitudes de crédito 
 - Registro, inicio y cierre de sesión.
 - Predicción de una solicitud de crédito con Regresión Logística, Árbol de Decisión o Random Forest.
 - Comparación de exactitud, precisión, sensibilidad, F1 y ROC-AUC.
+- Historial personal con detalle de cada predicción guardada.
+- Comparación de dos o tres predicciones para contrastar los modelos usados.
+- Panel personal con resumen de actividad y modelo recomendado.
 - Preparación y validación del dataset de origen.
 - Conexión a SQL Server mediante autenticación de Windows.
-
-> El historial de predicciones está previsto en la base de datos, pero aún no forma parte de la aplicación web.
 
 ## Estructura
 
@@ -97,11 +98,17 @@ web_creditos/
 
 6. **Reentrenar cuando sea necesario.** Desde el panel puedes pulsar **Reentrenar localmente**. La aplicación vuelve a generar los archivos de modelos y el resumen de métricas usando el dataset procesado actual.
 
-7. **Cerrar sesión.** Utiliza el botón **Cerrar sesión** de la barra lateral al terminar de usar la aplicación.
+7. **Consultar el historial.** Cada predicción se guarda automáticamente. En **Historial** puedes filtrar por resultado o modelo y abrir el detalle de cualquier registro.
+
+8. **Comparar predicciones.** En el historial selecciona dos o tres registros y pulsa **Comparar seleccionadas**. Cuando los datos de entrada coinciden, la pantalla indica que se trata del mismo caso y recomienda el modelo según F1-score y ROC-AUC.
+
+9. **Revisar tu actividad.** En **Mi actividad** encontrarás tus totales de predicciones, resultados aprobados/rechazados, modelo más utilizado y la recomendación actual.
+
+10. **Cerrar sesión.** Utiliza el botón **Cerrar sesión** de la barra lateral al terminar de usar la aplicación.
 
 ## Base de datos
 
-El esquema crea las tablas `usuarios`, `modelos` y `predicciones`. Actualmente la aplicación usa `usuarios` para la autenticación. Las tablas de modelos y predicciones están preparadas para una futura implementación del historial.
+El esquema crea las tablas `usuarios`, `modelos` y `predicciones`. La aplicación usa `usuarios` para la autenticación, sincroniza las métricas de los modelos en `modelos` y guarda el historial personal en `predicciones`.
 
 ## Variables de entorno
 

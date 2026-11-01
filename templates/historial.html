@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CrediVision · Historial</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="{{ url_for('panel') }}"><span class="brand-mark">C</span><span>CrediVision</span></a>
+            <p class="brand-caption">Análisis de créditos</p>
+            <nav aria-label="Navegación principal">
+                <a href="{{ url_for('panel') }}">Resumen</a>
+                <a href="{{ url_for('mi_panel') }}">Mi actividad</a>
+                <a href="{{ url_for('nueva_solicitud') }}">Nueva solicitud</a>
+                <a class="active" href="{{ url_for('historial') }}">Historial</a>
+                <a href="{{ url_for('comparacion') }}">Comparar modelos</a>
+            </nav>
+            <div class="sidebar-user"><span>Sesión activa</span><strong>{{ session.get('usuario') }}</strong><form action="{{ url_for('cerrar_sesion') }}" method="post"><button type="submit">Cerrar sesión</button></form></div>
+        </aside>
+        <main class="main-content">
+            <header class="topbar"><div><p class="eyebrow">Predicciones guardadas</p><h1>Mi historial</h1></div><a class="button primary" href="{{ url_for('nueva_solicitud') }}">Nueva predicción <span>→</span></a></header>
+            {% with mensajes = get_flashed_messages(with_categories=true) %}{% for categoria, mensaje in mensajes %}<div class="alert {{ categoria }}" role="alert">{{ mensaje }}</div>{% endfor %}{% endwith %}
+            <form class="history-filters" method="get">
+                <label>Resultado<select name="resultado"><option value="">Todos</option><option value="Aprobado" {{ 'selected' if filtros.resultado == 'Aprobado' else '' }}>Aprobado</option><option value="Rechazado" {{ 'selected' if filtros.resultado == 'Rechazado' else '' }}>Rechazado</option></select></label>
+                <label>Modelo<select name="modelo"><option value="">Todos</option>{% for modelo in modelos %}<option value="{{ modelo.clave }}" {{ 'selected' if filtros.modelo == modelo.clave else '' }}>{{ modelo.nombre }}</option>{% endfor %}</select></label>
+                <button class="button secondary" type="submit">Filtrar</button>
+                <a class="clear-link" href="{{ url_for('historial') }}">Limpiar</a>
+            </form>
+            {% if predicciones %}
+            <form action="{{ url_for('comparar_predicciones') }}" method="post">
+                <div class="table-card"><div class="table-wrap"><table><thead><tr><th>Comparar</th><th>Fecha</th><th>Modelo</th><th>Resultado</th><th>Probabilidad</th><th></th></tr></thead><tbody>
+                    {% for prediccion in predicciones %}<tr><td><input class="history-check" type="checkbox" name="prediccion_id" value="{{ prediccion.prediccion_id }}" aria-label="Seleccionar predicción {{ prediccion.prediccion_id }}"></td><td>{{ prediccion.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</td><td>{{ prediccion.modelo_nombre }}{% if prediccion.es_recomendado %}<span class="inline-pill">Recomendado</span>{% endif %}</td><td><span class="status {{ 'approved' if prediccion.resultado == 'Aprobado' else 'rejected' }}">{{ prediccion.resultado }}</span></td><td>{{ prediccion.probabilidad_aprobacion|porcentaje }}</td><td><a class="table-link" href="{{ url_for('detalle_prediccion', prediccion_id=prediccion.prediccion_id) }}">Ver detalle</a></td></tr>{% endfor %}
+                </tbody></table></div></div>
+                <div class="compare-action"><p>Selecciona dos o tres registros. El sistema indicará si corresponden al mismo caso y recomendará el modelo con mejor desempeño evaluado.</p><button class="button primary" type="submit">Comparar seleccionadas</button></div>
+            </form>
+            {% else %}
+            <section class="empty-or-action"><h2>Aún no hay predicciones</h2><p>Cuando generes una predicción, se guardará automáticamente aquí con su modelo, fecha y resultado.</p><a href="{{ url_for('nueva_solicitud') }}">Crear mi primera predicción →</a></section>
+            {% endif %}
+        </main>
+    </div>
+</body>
+</html>

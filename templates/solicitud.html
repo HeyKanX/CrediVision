@@ -18,7 +18,9 @@
 
             <nav aria-label="Navegación principal">
                 <a href="{{ url_for('panel') }}">Resumen</a>
+                <a href="{{ url_for('mi_panel') }}">Mi actividad</a>
                 <a class="active" href="{{ url_for('nueva_solicitud') }}">Nueva solicitud</a>
+                <a href="{{ url_for('historial') }}">Historial</a>
                 <a href="{{ url_for('comparacion') }}">Comparar modelos</a>
             </nav>
 
@@ -49,6 +51,15 @@
                     La aplicación calculará
                     una estimación con el modelo seleccionado.
                 </p>
+            </section>
+
+            <section class="recommendation-banner">
+                <div>
+                    <p class="eyebrow">Modelo recomendado</p>
+                    <h2>{{ modelo_recomendado.nombre }}</h2>
+                    <p>Presenta el mejor F1-score en la evaluación actual: {{ modelo_recomendado.f1|porcentaje }}.</p>
+                </div>
+                <span class="pill">F1 {{ modelo_recomendado.f1|porcentaje }}</span>
             </section>
 
             {% if mensaje_error %}
@@ -236,6 +247,7 @@
                 <div class="form-actions">
                     <p>
                         Los valores monetarios conservan la escala original del dataset.
+                    </p>
                     <button class="button primary" type="submit">
                         Generar predicción <span>→</span>
                     </button>

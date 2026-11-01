@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CrediVision · Mi actividad</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="{{ url_for('panel') }}"><span class="brand-mark">C</span><span>CrediVision</span></a>
+            <p class="brand-caption">Análisis de créditos</p>
+            <nav aria-label="Navegación principal">
+                <a href="{{ url_for('panel') }}">Resumen</a>
+                <a class="active" href="{{ url_for('mi_panel') }}">Mi actividad</a>
+                <a href="{{ url_for('nueva_solicitud') }}">Nueva solicitud</a>
+                <a href="{{ url_for('historial') }}">Historial</a>
+                <a href="{{ url_for('comparacion') }}">Comparar modelos</a>
+            </nav>
+            <div class="sidebar-user"><span>Sesión activa</span><strong>{{ session.get('usuario') }}</strong><form action="{{ url_for('cerrar_sesion') }}" method="post"><button type="submit">Cerrar sesión</button></form></div>
+        </aside>
+        <main class="main-content">
+            <header class="topbar"><div><p class="eyebrow">Dashboard personal</p><h1>Mi actividad</h1></div><a class="button primary" href="{{ url_for('nueva_solicitud') }}">Nueva predicción <span>→</span></a></header>
+            <section class="stats-grid personal-stats">
+                <article class="stat-card"><span>Predicciones realizadas</span><strong>{{ resumen.total }}</strong><small>Guardadas en tu historial</small></article>
+                <article class="stat-card"><span>Resultados aprobados</span><strong>{{ resumen.aprobadas }}</strong><small>Según el modelo seleccionado</small></article>
+                <article class="stat-card"><span>Resultados rechazados</span><strong>{{ resumen.rechazadas }}</strong><small>Según el modelo seleccionado</small></article>
+                <article class="stat-card"><span>Modelo más usado</span><strong class="stat-text">{{ resumen.modelo_frecuente }}</strong><small>{{ resumen.ultima_prediccion.strftime('%d/%m/%Y %H:%M') if resumen.ultima_prediccion else 'Aún no hay actividad' }}</small></article>
+            </section>
+            <section class="recommendation-banner"><div><p class="eyebrow">Recomendación actual</p><h2>{{ modelo_recomendado.nombre }}</h2><p>Este modelo tiene el mejor F1-score registrado: {{ modelo_recomendado.f1|porcentaje }}. La recomendación se actualiza cuando se reentrenan los modelos.</p></div><a class="button secondary" href="{{ url_for('comparacion') }}">Ver métricas</a></section>
+            <section class="empty-or-action"><h2>Continúa desde tu historial</h2><p>Consulta resultados anteriores, abre sus detalles o selecciona hasta tres predicciones para comparar los modelos usados.</p><a href="{{ url_for('historial') }}">Abrir historial →</a></section>
+        </main>
+    </div>
+</body>
+</html>

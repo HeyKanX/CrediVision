@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CrediVision · Iniciar sesión</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body class="auth-page">
+    <main class="auth-card">
+        <a class="brand auth-brand" href="{{ url_for('iniciar_sesion') }}">
+            <span class="brand-mark">C</span>
+            <span>CrediVision</span>
+        </a>
+        <p class="eyebrow">Acceso</p>
+        <h1>Iniciar sesión</h1>
+        <p class="auth-copy">Ingresa a tu cuenta para acceder al panel de evaluación.</p>
+
+        {% with mensajes = get_flashed_messages(with_categories=true) %}
+            {% for categoria, mensaje in mensajes %}
+            <div class="alert {{ categoria }}" role="alert">{{ mensaje }}</div>
+            {% endfor %}
+        {% endwith %}
+
+        <form class="auth-form" method="post">
+            <label>
+                Usuario o correo electrónico
+                <input name="identificador" autocomplete="username" required autofocus>
+            </label>
+            <label>
+                Contraseña
+                <input name="contrasena" type="password" autocomplete="current-password" required>
+            </label>
+            <button class="button primary" type="submit">Ingresar</button>
+        </form>
+        <p class="auth-footer">¿Aún no tienes una cuenta? <a href="{{ url_for('registrar_usuario') }}">Regístrate</a></p>
+    </main>
+</body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CrediVision · Nueva solicitud</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="{{ url_for('panel') }}">
+                <span class="brand-mark">C</span>
+                <span>CrediVision</span>
+            </a>
+
+            <p class="brand-caption">Análisis de créditos</p>
+
+            <nav aria-label="Navegación principal">
+                <a href="{{ url_for('panel') }}">Resumen</a>
+                <a class="active" href="{{ url_for('nueva_solicitud') }}">Nueva solicitud</a>
+                <a href="{{ url_for('comparacion') }}">Comparar modelos</a>
+            </nav>
+
+            <div class="sidebar-user">
+                <span>Sesión activa</span>
+                <strong>{{ session.get('usuario') }}</strong>
+                <form action="{{ url_for('cerrar_sesion') }}" method="post">
+                    <button type="submit">Cerrar sesión</button>
+                </form>
+            </div>
+
+            <p class="sidebar-note">
+                Web para el analicis de creditos en bancos y finacieras.
+            </p>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">Formulario</p>
+                    <h1>Nueva solicitud</h1>
+                </div>
+                <span class="local-badge">● Ejecución</span>
+            </header>
+
+            <section class="form-lead">
+                <p>
+                    La aplicación calculará
+                    una estimación con el modelo seleccionado.
+                </p>
+            </section>
+
+            {% if mensaje_error %}
+            <div class="alert" role="alert">{{ mensaje_error }}</div>
+            {% endif %}
+
+            <form class="application-form" action="{{ url_for('predecir') }}" method="post">
+                <section class="form-card full">
+                    <label for="modelo">Modelo para la predicción</label>
+                    <select id="modelo" name="modelo" required>
+                        {% for clave, nombre in modelos.items() %}
+                        <option
+                            value="{{ clave }}"
+                            {{ 'selected' if valores.get('modelo') == clave else '' }}
+                        >
+                            {{ nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <small>Podrá comparar resultados usando otro modelo en una nueva consulta.</small>
+                </section>
+
+                <section class="form-card">
+                    <h2>Perfil de la solicitud</h2>
+
+                    <div class="field-grid">
+                        <label>
+                            Dependientes
+                            <input
+                                name="numero_dependientes"
+                                type="number"
+                                min="0"
+                                max="10"
+                                value="{{ valores.get('numero_dependientes', '1') }}"
+                                required
+                            >
+                        </label>
+
+                        <label>
+                            Educación
+                            <select name="nivel_educativo">
+                                <option
+                                    value="Profesional"
+                                    {{ 'selected' if valores.get('nivel_educativo', 'Profesional') == 'Profesional' else '' }}
+                                >
+                                    Profesional
+                                </option>
+                                <option
+                                    value="No profesional"
+                                    {{ 'selected' if valores.get('nivel_educativo') == 'No profesional' else '' }}
+                                >
+                                    No profesional
+                                </option>
+                            </select>
+                        </label>
+
+                        <label>
+                            ¿Independiente?
+                            <select name="trabajador_independiente">
+                                <option
+                                    value="No"
+                                    {{ 'selected' if valores.get('trabajador_independiente', 'No') == 'No' else '' }}
+                                >
+                                    No
+                                </option>
+                                <option
+                                    value="Sí"
+                                    {{ 'selected' if valores.get('trabajador_independiente') == 'Sí' else '' }}
+                                >
+                                    Sí
+                                </option>
+                            </select>
+                        </label>
+
+                        <label>
+                            Puntaje CIBIL
+                            <input
+                                name="puntaje_cibil"
+                                type="number"
+                                min="300"
+                                max="900"
+                                value="{{ valores.get('puntaje_cibil', '700') }}"
+                                required
+                            >
+                        </label>
+                    </div>
+                </section>
+
+                <section class="form-card">
+                    <h2>Condiciones del crédito</h2>
+
+                    <div class="field-grid">
+                        <label>
+                            Ingreso anual
+                            <input
+                                name="ingreso_anual"
+                                type="number"
+                                min="0"
+                                step="1000"
+                                value="{{ valores.get('ingreso_anual', '6000000') }}"
+                                required
+                            >
+                        </label>
+
+                        <label>
+                            Monto solicitado
+                            <input
+                                name="monto_solicitado"
+                                type="number"
+                                min="0"
+                                step="1000"
+                                value="{{ valores.get('monto_solicitado', '12000000') }}"
+                                required
+                            >
+                        </label>
+
+                        <label>
+                            Plazo
+                            <input
+                                name="plazo_credito"
+                                type="number"
+                                min="1"
+                                max="30"
+                                value="{{ valores.get('plazo_credito', '10') }}"
+                                required
+                            >
+                        </label>
+                    </div>
+                </section>
+
+                <section class="form-card full">
+                    <h2>Activos declarados</h2>
+
+                    <div class="field-grid four">
+                        <label>
+                            Residenciales
+                            <input
+                                name="valor_activos_residenciales"
+                                type="number"
+                                min="0"
+                                step="1000"
+                                value="{{ valores.get('valor_activos_residenciales', '3500000') }}"
+                                required
+                            >
+                        </label>
+
+                        <label>
+                            Comerciales
+                            <input
+                                name="valor_activos_comerciales"
+                                type="number"
+                                min="0"
+                                step="1000"
+                                value="{{ valores.get('valor_activos_comerciales', '1000000') }}"
+                                required
+                            >
+                        </label>
+
+                        <label>
+                            De lujo
+                            <input
+                                name="valor_activos_lujo"
+                                type="number"
+                                min="0"
+                                step="1000"
+                                value="{{ valores.get('valor_activos_lujo', '2000000') }}"
+                                required
+                            >
+                        </label>
+
+                        <label>
+                            Bancarios
+                            <input
+                                name="valor_activos_bancarios"
+                                type="number"
+                                min="0"
+                                step="1000"
+                                value="{{ valores.get('valor_activos_bancarios', '1800000') }}"
+                                required
+                            >
+                        </label>
+                    </div>
+                </section>
+
+                <div class="form-actions">
+                    <p>
+                        Los valores monetarios conservan la escala original del dataset.
+                    <button class="button primary" type="submit">
+                        Generar predicción <span>→</span>
+                    </button>
+                </div>
+            </form>
+        </main>
+    </div>
+</body>
+</html>

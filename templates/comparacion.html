@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CrediVision · Comparación</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="{{ url_for('panel') }}">
+                <span class="brand-mark">C</span>
+                <span>CrediVision</span>
+            </a>
+
+            <p class="brand-caption">Análisis de créditos</p>
+
+            <nav aria-label="Navegación principal">
+                <a href="{{ url_for('panel') }}">Resumen</a>
+                <a href="{{ url_for('nueva_solicitud') }}">Nueva solicitud</a>
+                <a class="active" href="{{ url_for('comparacion') }}">Comparar modelos</a>
+            </nav>
+
+            <div class="sidebar-user">
+                <span>Sesión activa</span>
+                <strong>{{ session.get('usuario') }}</strong>
+                <form action="{{ url_for('cerrar_sesion') }}" method="post">
+                    <button type="submit">Cerrar sesión</button>
+                </form>
+            </div>
+
+            <p class="sidebar-note">
+                Web para el analicis de creditos en bancos y finacieras.
+            </p>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">Tablas</p>
+                    <h1>Comparación de modelos</h1>
+                </div>
+                <span class="local-badge">● Ejecución</span>
+            </header>
+
+            <section class="intro compact">
+                <div>
+                    <h2>Resultados sobre la misma muestra de prueba</h2>
+                    <p>
+                        Versión {{ version }}. Valores calculados al entrenar localmente con
+                        una división estratificada 80/20.
+                    </p>
+                </div>
+            </section>
+
+            <section class="table-card">
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Modelo</th>
+                                <th>Exactitud</th>
+                                <th>Precisión</th>
+                                <th>Sensibilidad</th>
+                                <th>F1</th>
+                                <th>ROC-AUC</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for _, modelo in modelos.items() %}
+                            <tr>
+                                <td><strong>{{ modelo.nombre }}</strong></td>
+                                <td>{{ modelo.exactitud|porcentaje }}</td>
+                                <td>{{ modelo.precision|porcentaje }}</td>
+                                <td>{{ modelo.sensibilidad|porcentaje }}</td>
+                                <td>{{ modelo.f1|porcentaje }}</td>
+                                <td>{{ modelo.roc_auc|porcentaje }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="confusion-grid" aria-label="Matrices de confusión">
+                {% for _, modelo in modelos.items() %}
+                <article class="confusion-card">
+                    <h3>{{ modelo.nombre }}</h3>
+                    <p>Matriz de confusión</p>
+
+                    <div class="matrix">
+                        <span>VN<br><strong>{{ modelo.matriz_confusion[0][0] }}</strong></span>
+                        <span>FP<br><strong>{{ modelo.matriz_confusion[0][1] }}</strong></span>
+                        <span>FN<br><strong>{{ modelo.matriz_confusion[1][0] }}</strong></span>
+                        <span>VP<br><strong>{{ modelo.matriz_confusion[1][1] }}</strong></span>
+                    </div>
+                </article>
+                {% endfor %}
+            </section>
+        </main>
+    </div>
+</body>
+</html>

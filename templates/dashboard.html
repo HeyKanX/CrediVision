@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CrediVision · Resumen</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="{{ url_for('panel') }}">
+                <span class="brand-mark">C</span>
+                <span>CrediVision</span>
+            </a>
+
+            <p class="brand-caption">Análisis de créditos</p>
+
+            <nav aria-label="Navegación principal">
+                <a class="active" href="{{ url_for('panel') }}">Resumen</a>
+                <a href="{{ url_for('nueva_solicitud') }}">Nueva solicitud</a>
+                <a href="{{ url_for('comparacion') }}">Comparar modelos</a>
+            </nav>
+
+            <div class="sidebar-user">
+                <span>Sesión activa</span>
+                <strong>{{ session.get('usuario') }}</strong>
+                <form action="{{ url_for('cerrar_sesion') }}" method="post">
+                    <button type="submit">Cerrar sesión</button>
+                </form>
+            </div>
+
+            <p class="sidebar-note">
+                Web para el analicis de creditos en bancos y finacieras.
+            </p>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">Dashboard</p>
+                    <h1>Panel de evaluación</h1>
+                </div>
+                <span class="local-badge">● Ejecución</span>
+            </header>
+
+            <section class="intro">
+                <div>
+                    <h2>Predicción de aprobación de créditos</h2>
+                    <p>
+                        Compara tres clasificadores entrenados con el mismo conjunto de
+                        prueba y simula una nueva solicitud desde el navegador.
+                    </p>
+                </div>
+                <a class="button primary" href="{{ url_for('nueva_solicitud') }}">
+                    Evaluar una solicitud <span>→</span>
+                </a>
+            </section>
+
+            <section class="stats-grid" aria-label="Resumen del conjunto de datos">
+                <article class="stat-card">
+                    <span>Solicitudes analizadas</span>
+                    <strong>{{ conjunto.registros }}</strong>
+                    <small>Registros del dataset local</small>
+                </article>
+
+                <article class="stat-card">
+                    <span>Aprobaciones históricas</span>
+                    <strong>{{ (conjunto.aprobadas / conjunto.registros)|porcentaje }}</strong>
+                    <small>{{ conjunto.aprobadas }} aprobadas</small>
+                </article>
+
+                <article class="stat-card">
+                    <span>Mejor F1 en prueba</span>
+                    <strong>{{ modelos[mejor_clave].f1|porcentaje }}</strong>
+                    <small>{{ modelos[mejor_clave].nombre }}</small>
+                </article>
+
+                <article class="stat-card">
+                    <span>Datos de evaluación</span>
+                    <strong>{{ conjunto.registros_prueba }}</strong>
+                    <small>Partición estratificada 80/20</small>
+                </article>
+            </section>
+
+            <section class="section-heading">
+                <div>
+                    <p class="eyebrow">Resultados</p>
+                    <h2>Comparación rápida</h2>
+                </div>
+                <a href="{{ url_for('comparacion') }}">Ver métricas completas →</a>
+            </section>
+
+            <section class="model-grid" aria-label="Métricas de los modelos">
+                {% for clave, modelo in modelos.items() %}
+                <article class="model-card {{ 'best' if clave == mejor_clave else '' }}">
+                    {% if clave == mejor_clave %}
+                    <span class="pill">Mejor F1</span>
+                    {% endif %}
+
+                    <h3>{{ modelo.nombre }}</h3>
+
+                    <div class="metric-line">
+                        <span>F1-score</span>
+                        <strong>{{ modelo.f1|porcentaje }}</strong>
+                    </div>
+
+                    <progress
+                        class="barra-progreso"
+                        value="{{ modelo.f1 }}"
+                        max="1"
+                        aria-label="F1-score {{ modelo.f1|porcentaje }}"
+                    >
+                        {{ modelo.f1|porcentaje }}
+                    </progress>
+
+                    <dl>
+                        <div>
+                            <dt>Exactitud</dt>
+                            <dd>{{ modelo.exactitud|porcentaje }}</dd>
+                        </div>
+                        <div>
+                            <dt>ROC-AUC</dt>
+                            <dd>{{ modelo.roc_auc|porcentaje }}</dd>
+                        </div>
+                    </dl>
+                </article>
+                {% endfor %}
+            </section>
+
+            <section class="method-card">
+                <div>
+                    <p class="eyebrow">Metodología</p>
+                    <h2>Mismo protocolo, comparación justa</h2>
+                </div>
+                <p>
+                    Los modelos usan una partición estratificada de 80 % para entrenamiento
+                    y 20 % para prueba. La imputación, codificación y escalado se incorporan
+                    al pipeline para evitar fuga de datos.
+                </p>
+                <form action="{{ url_for('reentrenar') }}" method="post">
+                    <button class="button secondary" type="submit">Reentrenar localmente</button>
+                </form>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CrediVision · Resultado</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" href="{{ url_for('panel') }}">
+                <span class="brand-mark">C</span>
+                <span>CrediVision</span>
+            </a>
+
+            <p class="brand-caption">Proyecto de análisis de créditos</p>
+
+            <nav aria-label="Navegación principal">
+                <a href="{{ url_for('panel') }}">Resumen</a>
+                <a class="active" href="{{ url_for('nueva_solicitud') }}">Nueva solicitud</a>
+                <a href="{{ url_for('comparacion') }}">Comparar modelos</a>
+            </nav>
+
+            <div class="sidebar-user">
+                <span>Sesión activa</span>
+                <strong>{{ session.get('usuario') }}</strong>
+                <form action="{{ url_for('cerrar_sesion') }}" method="post">
+                    <button type="submit">Cerrar sesión</button>
+                </form>
+            </div>
+
+            <p class="sidebar-note">Proyecto de estimación y análisis de créditos.</p>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div>
+                    <p class="eyebrow">Machine Learning · Clasificación binaria</p>
+                    <h1>Resultado de la estimación</h1>
+                </div>
+                <span class="local-badge">● Ejecución local</span>
+            </header>
+
+            <section class="result-card {{ 'resultado-aprobado' if aprobada else 'resultado-rechazado' }}">
+                <p class="eyebrow">{{ nombre_modelo }} · {{ version_modelo }}</p>
+                <span class="result-icon">{{ '✓' if aprobada else '!' }}</span>
+                <h2>{{ 'Probable aprobación' if aprobada else 'Probable rechazo' }}</h2>
+
+                <p class="result-copy">
+                    El modelo clasifica esta solicitud como
+                    <strong>{{ 'aprobada' if aprobada else 'rechazada' }}</strong> según los
+                    patrones identificados en los datos analizados.
+                </p>
+
+                <div class="probability">
+                    <span>Probabilidad de aprobación</span>
+                    <strong>{{ probabilidad|porcentaje }}</strong>
+                    <progress
+                        class="barra-progreso"
+                        value="{{ probabilidad }}"
+                        max="1"
+                        aria-label="Probabilidad de aprobación {{ probabilidad|porcentaje }}"
+                    >
+                        {{ probabilidad|porcentaje }}
+                    </progress>
+                </div>
+
+                <a class="button light" href="{{ url_for('nueva_solicitud') }}">
+                    Evaluar otra solicitud
+                </a>
+            </section>
+
+            <section class="result-details">
+                <div>
+                    <p class="eyebrow">Datos ingresados</p>
+                    <h2>Resumen de la solicitud</h2>
+                </div>
+
+                <dl>
+                    <div>
+                        <dt>Ingreso anual</dt>
+                        <dd>{{ datos.ingreso_anual|moneda }}</dd>
+                    </div>
+                    <div>
+                        <dt>Monto solicitado</dt>
+                        <dd>{{ datos.monto_solicitado|moneda }}</dd>
+                    </div>
+                    <div>
+                        <dt>Plazo</dt>
+                        <dd>{{ datos.plazo_credito }} unidades</dd>
+                    </div>
+                    <div>
+                        <dt>Puntaje CIBIL</dt>
+                        <dd>{{ datos.puntaje_cibil }}</dd>
+                    </div>
+                    <div>
+                        <dt>Dependientes</dt>
+                        <dd>{{ datos.numero_dependientes }}</dd>
+                    </div>
+                    <div>
+                        <dt>Trabajo independiente</dt>
+                        <dd>{{ datos.trabajador_independiente }}</dd>
+                    </div>
+                </dl>
+            </section>
+
+        </main>
+    </div>
+</body>
+</html>

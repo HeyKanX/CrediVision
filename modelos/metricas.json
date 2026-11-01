@@ -1,0 +1,65 @@
+{
+  "conjunto_datos": {
+    "registros": 4269,
+    "aprobadas": 2656,
+    "rechazadas": 1613,
+    "registros_prueba": 854
+  },
+  "modelos": {
+    "regresion_logistica": {
+      "nombre": "Regresión Logística",
+      "exactitud": 0.9239,
+      "precision": 0.9551,
+      "sensibilidad": 0.9209,
+      "f1": 0.9377,
+      "roc_auc": 0.9734,
+      "matriz_confusion": [
+        [
+          300,
+          23
+        ],
+        [
+          42,
+          489
+        ]
+      ]
+    },
+    "arbol_decision": {
+      "nombre": "Árbol de Decisión",
+      "exactitud": 0.9754,
+      "precision": 0.9904,
+      "sensibilidad": 0.9699,
+      "f1": 0.98,
+      "roc_auc": 0.9954,
+      "matriz_confusion": [
+        [
+          318,
+          5
+        ],
+        [
+          16,
+          515
+        ]
+      ]
+    },
+    "bosque_aleatorio": {
+      "nombre": "Random Forest",
+      "exactitud": 0.9754,
+      "precision": 0.9866,
+      "sensibilidad": 0.9736,
+      "f1": 0.9801,
+      "roc_auc": 0.9984,
+      "matriz_confusion": [
+        [
+          316,
+          7
+        ],
+        [
+          14,
+          517
+        ]
+      ]
+    }
+  },
+  "version": "v1.1-local-es"
+}

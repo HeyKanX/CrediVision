@@ -28,7 +28,7 @@
                 <article class="stat-card"><span>Resultados rechazados</span><strong>{{ resumen.rechazadas }}</strong><small>Según el modelo seleccionado</small></article>
                 <article class="stat-card"><span>Modelo más usado</span><strong class="stat-text">{{ resumen.modelo_frecuente }}</strong><small>{{ resumen.ultima_prediccion.strftime('%d/%m/%Y %H:%M') if resumen.ultima_prediccion else 'Aún no hay actividad' }}</small></article>
             </section>
-            <section class="recommendation-banner"><div><p class="eyebrow">Recomendación actual</p><h2>{{ modelo_recomendado.nombre }}</h2><p>Este modelo tiene el mejor F1-score registrado: {{ modelo_recomendado.f1|porcentaje }}. La recomendación se actualiza cuando se reentrenan los modelos.</p></div><a class="button secondary" href="{{ url_for('comparacion') }}">Ver métricas</a></section>
+            <section class="recommendation-banner"><div><p class="eyebrow">Recomendación actual</p><h2>{{ modelo_recomendado.nombre }}</h2><p>Selección por F1 medio de validación cruzada: {{ modelo_recomendado.f1_referencia|porcentaje }}. El ROC-AUC medio resuelve empates.</p></div><a class="button secondary" href="{{ url_for('comparacion') }}">Ver métricas</a></section>
             <section class="empty-or-action"><h2>Continúa desde tu historial</h2><p>Consulta resultados anteriores, abre sus detalles o selecciona hasta tres predicciones para comparar los modelos usados.</p><a href="{{ url_for('historial') }}">Abrir historial →</a></section>
         </main>
     </div>

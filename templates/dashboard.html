@@ -73,7 +73,7 @@
                 </article>
 
                 <article class="stat-card">
-                    <span>Mejor F1 en prueba</span>
+                    <span>F1 de prueba del modelo recomendado</span>
                     <strong>{{ modelos[mejor_clave].f1|porcentaje }}</strong>
                     <small>{{ modelos[mejor_clave].nombre }}</small>
                 </article>
@@ -97,7 +97,7 @@
                 {% for clave, modelo in modelos.items() %}
                 <article class="model-card {{ 'best' if clave == mejor_clave else '' }}">
                     {% if clave == mejor_clave %}
-                    <span class="pill">Mejor F1</span>
+                    <span class="pill">Recomendado por CV</span>
                     {% endif %}
 
                     <h3>{{ modelo.nombre }}</h3>

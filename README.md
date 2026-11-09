@@ -127,3 +127,20 @@ El esquema crea las tablas `usuarios`, `modelos` y `predicciones`. La aplicació
 | `FLASK_SECRET_KEY` | Clave usada para firmar sesiones de Flask. |
 
 El archivo `.env` contiene configuración local y no debe subirse al repositorio.
+
+## Preparación y evaluación sin fuga de información
+
+El preprocesamiento conserva los valores faltantes y representa los valores fuera de rango como faltantes. Al entrenar, cada `Pipeline` ajusta la imputación y el resto del preprocesamiento solo con su partición de entrenamiento. La evaluación usa una división estratificada 80/20 con semilla 42. Además, se calcula validación cruzada estratificada de cinco pliegues únicamente dentro del 80 % de entrenamiento. La prueba final queda separada y se usa para reportar las métricas finales. La recomendación del modelo se basa en el F1 medio de validación cruzada; el ROC-AUC medio resuelve empates.
+
+Después de actualizar el código, regenera los datos y los modelos para reemplazar artefactos de versiones anteriores:
+
+```powershell
+python preparar_dataset.py
+python train_models.py
+```
+
+## Mejora pendiente: cargar un dataset desde la aplicación
+
+El botón **Reentrenar localmente** vuelve a entrenar con el CSV procesado que ya está en el proyecto; todavía no permite seleccionar ni cargar un dataset nuevo desde la interfaz. Para completar esta mejora, la aplicación debe ofrecer una carga CSV restringida a usuarios autorizados, validar columnas, tipos, categorías y etiquetas antes de aceptar el archivo, y ejecutar el flujo de preparación y entrenamiento con ese dataset. El proceso debe volver a calcular la validación cruzada estratificada y las métricas del test reservado, guardar los nuevos modelos y métricas con una versión identificable, y actualizar la recomendación solo si todo el entrenamiento termina correctamente.
+
+La mejora quedará verificada cuando una carga válida produzca modelos y métricas asociados a una nueva versión, una carga con esquema o etiquetas inválidas muestre un error comprensible sin reemplazar la versión vigente, y los resultados registrados permitan reproducir la evaluación sin usar el test para imputar o elegir el modelo.

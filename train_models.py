@@ -12,7 +12,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_recall_fscore_support, roc_auc_score
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import StratifiedKFold, cross_validate, train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.tree import DecisionTreeClassifier
@@ -22,6 +22,8 @@ DIRECTORIO_BASE = Path(__file__).resolve().parent
 RUTA_DATASET = DIRECTORIO_BASE / "datos" / "solicitudes_credito.csv"
 DIRECTORIO_MODELOS = DIRECTORIO_BASE / "modelos"
 SEMILLA_ALEATORIA = 42
+PLIEGUES_CV = 5
+VERSION_MODELOS = "v1.2-pipeline-cv5"
 
 CARACTERISTICAS_NUMERICAS = [
     "numero_dependientes", "ingreso_anual", "monto_solicitado", "plazo_credito",
@@ -81,12 +83,46 @@ def calcular_metricas(modelo: Pipeline, datos_prueba: pd.DataFrame, etiquetas_pr
     }
 
 
+def calcular_validacion_cruzada(
+    modelo: Pipeline,
+    datos_entrenamiento: pd.DataFrame,
+    etiquetas_entrenamiento: pd.Series,
+    particiones: StratifiedKFold,
+) -> dict:
+    """Evalúa el pipeline solo dentro del entrenamiento, reajustándolo en cada pliegue."""
+    puntuaciones = cross_validate(
+        modelo,
+        datos_entrenamiento,
+        etiquetas_entrenamiento,
+        cv=particiones,
+        scoring={
+            "exactitud": "accuracy",
+            "precision": "precision",
+            "sensibilidad": "recall",
+            "f1": "f1",
+            "roc_auc": "roc_auc",
+        },
+        n_jobs=1,
+        error_score="raise",
+    )
+    return {
+        nombre: {
+            "media": round(float(puntuaciones[f"test_{nombre}"].mean()), 4),
+            "desviacion": round(float(puntuaciones[f"test_{nombre}"].std(ddof=1)), 4),
+        }
+        for nombre in ("exactitud", "precision", "sensibilidad", "f1", "roc_auc")
+    }
+
+
 def entrenar_modelos() -> dict:
     datos = cargar_dataset()
     variables_entrada = datos[CARACTERISTICAS]
     etiqueta = datos["estado_aprobacion"]
     entrenamiento, prueba, etiquetas_entrenamiento, etiquetas_prueba = train_test_split(
         variables_entrada, etiqueta, test_size=0.2, stratify=etiqueta, random_state=SEMILLA_ALEATORIA
+    )
+    particiones_cv = StratifiedKFold(
+        n_splits=PLIEGUES_CV, shuffle=True, random_state=SEMILLA_ALEATORIA
     )
     definiciones = {
         "regresion_logistica": (
@@ -115,17 +151,40 @@ def entrenar_modelos() -> dict:
     DIRECTORIO_MODELOS.mkdir(exist_ok=True)
     metricas_modelos = {}
     for clave, (nombre, modelo) in definiciones.items():
+        cv = calcular_validacion_cruzada(
+            modelo, entrenamiento, etiquetas_entrenamiento, particiones_cv
+        )
         modelo.fit(entrenamiento, etiquetas_entrenamiento)
         joblib.dump(modelo, DIRECTORIO_MODELOS / f"{clave}.joblib")
-        metricas_modelos[clave] = {"nombre": nombre, **calcular_metricas(modelo, prueba, etiquetas_prueba)}
+        metricas_modelos[clave] = {
+            "nombre": nombre,
+            **calcular_metricas(modelo, prueba, etiquetas_prueba),
+            "validacion_cruzada": cv,
+        }
+
+    clave_recomendado = max(
+        metricas_modelos,
+        key=lambda clave: (
+            metricas_modelos[clave]["validacion_cruzada"]["f1"]["media"],
+            metricas_modelos[clave]["validacion_cruzada"]["roc_auc"]["media"],
+        ),
+    )
 
     resumen = {
         "conjunto_datos": {
             "registros": int(len(datos)), "aprobadas": int(etiqueta.sum()),
-            "rechazadas": int((1 - etiqueta).sum()), "registros_prueba": int(len(prueba)),
+            "rechazadas": int((1 - etiqueta).sum()), "registros_entrenamiento": int(len(entrenamiento)),
+            "registros_prueba": int(len(prueba)),
         },
         "modelos": metricas_modelos,
-        "version": "v1.1-local-es",
+        "validacion_cruzada": {
+            "metodo": "StratifiedKFold",
+            "pliegues": PLIEGUES_CV,
+            "semilla": SEMILLA_ALEATORIA,
+            "conjunto": "entrenamiento",
+        },
+        "clave_modelo_recomendado": clave_recomendado,
+        "version": VERSION_MODELOS,
     }
     (DIRECTORIO_MODELOS / "metricas.json").write_text(
         json.dumps(resumen, ensure_ascii=False, indent=2), encoding="utf-8"

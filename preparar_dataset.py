@@ -1,7 +1,6 @@
 
 from __future__ import annotations
 
-from collections import Counter
 from pathlib import Path
 
 import pandas as pd
@@ -152,33 +151,6 @@ def limpiar_numericos(datos: pd.DataFrame) -> tuple[dict[str, int], dict[str, in
     return conversiones_invalidas, rangos_invalidos
 
 
-def imputar_valores(datos: pd.DataFrame) -> dict[str, int]:
-    """Imputa predictores; la etiqueta faltante se trata separadamente y se elimina."""
-    valores_imputados: Counter[str] = Counter()
-    for columna in COLUMNAS_NUMERICAS:
-        faltantes = int(datos[columna].isna().sum())
-        if faltantes:
-            mediana = datos[columna].median()
-            if pd.isna(mediana):
-                raise ValueError(f"No se puede imputar {columna}: no hay valores numéricos válidos.")
-            datos[columna] = datos[columna].fillna(mediana)
-            valores_imputados[columna] = faltantes
-
-    for columna in ("nivel_educativo", "trabajador_independiente"):
-        faltantes = int(datos[columna].isna().sum())
-        if faltantes:
-            moda = datos[columna].mode(dropna=True)
-            if moda.empty:
-                raise ValueError(f"No se puede imputar {columna}: no hay categorías válidas.")
-            datos[columna] = datos[columna].fillna(moda.iloc[0])
-            valores_imputados[columna] = faltantes
-
-    for columna in COLUMNAS_ENTERAS:
-        datos[columna] = datos[columna].round().astype("int64")
-
-    return dict(valores_imputados)
-
-
 def preparar_dataset() -> Path:
     if not RUTA_ORIGEN.exists():
         raise FileNotFoundError(f"No se encontró el dataset fuente: {RUTA_ORIGEN}")
@@ -203,8 +175,7 @@ def preparar_dataset() -> Path:
 
     etiquetas_faltantes = int(datos["estado_aprobacion"].isna().sum())
     datos = datos.dropna(subset=["estado_aprobacion"]).copy()
-    valores_imputados = imputar_valores(datos)
-    nulos_finales = contar_nulos(datos)
+    nulos_preservados = contar_nulos(datos)
 
     RUTA_DESTINO.parent.mkdir(exist_ok=True)
     datos.to_csv(RUTA_DESTINO, index=False, encoding="utf-8")
@@ -224,12 +195,12 @@ def preparar_dataset() -> Path:
     mostrar_detalle("Valores no numéricos detectados:", {k: v for k, v in conversiones_invalidas.items() if v})
     mostrar_detalle("Valores fuera de rango detectados:", {k: v for k, v in rangos_invalidos.items() if v})
     print(f"\nFilas eliminadas por etiqueta inválida o faltante: {etiquetas_faltantes}")
-    mostrar_detalle("Valores imputados en predictores:", valores_imputados)
+    mostrar_detalle("Valores faltantes preservados para imputar dentro del pipeline:", nulos_preservados)
     if columnas_no_esperadas:
         print("\nColumnas no esperadas excluidas: " + ", ".join(columnas_no_esperadas))
     print("\nRESULTADO FINAL")
     print(f"Filas válidas      : {len(datos)}")
-    print(f"Nulos restantes    : {sum(nulos_finales.values())}")
+    print(f"Nulos en predictores: {sum(nulos_preservados.values())} (se imputan al entrenar cada partición)")
     print(f"Archivo generado   : {RUTA_DESTINO}")
     print("=" * 62)
     return RUTA_DESTINO

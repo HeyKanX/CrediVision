@@ -50,8 +50,8 @@
                 <div>
                     <h2>Resultados sobre la misma muestra de prueba</h2>
                     <p>
-                        Versión {{ version }}. Valores calculados al entrenar localmente con
-                        una división estratificada 80/20.
+                        Versión {{ version }}. El test estratificado 80/20 queda apartado.
+                        CV estratificada de cinco pliegues se calcula solo con entrenamiento.
                     </p>
                 </div>
             </section>
@@ -67,6 +67,8 @@
                                 <th>Sensibilidad</th>
                                 <th>F1</th>
                                 <th>ROC-AUC</th>
+                                <th>F1 CV (media ± DE)</th>
+                                <th>ROC-AUC CV (media ± DE)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -78,12 +80,16 @@
                                 <td>{{ modelo.sensibilidad|porcentaje }}</td>
                                 <td>{{ modelo.f1|porcentaje }}</td>
                                 <td>{{ modelo.roc_auc|porcentaje }}</td>
+                                <td>{{ modelo.validacion_cruzada.f1.media|porcentaje }} ± {{ modelo.validacion_cruzada.f1.desviacion|porcentaje }}</td>
+                                <td>{{ modelo.validacion_cruzada.roc_auc.media|porcentaje }} ± {{ modelo.validacion_cruzada.roc_auc.desviacion|porcentaje }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </section>
+
+            <p class="sidebar-note">La recomendación usa el F1 medio de CV; el ROC-AUC medio resuelve empates. El test se reserva para informar resultados finales.</p>
 
             <section class="confusion-grid" aria-label="Matrices de confusión">
                 {% for _, modelo in modelos.items() %}

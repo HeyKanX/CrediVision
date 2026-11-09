@@ -3,6 +3,7 @@
     "registros": 4269,
     "aprobadas": 2656,
     "rechazadas": 1613,
+    "registros_entrenamiento": 3415,
     "registros_prueba": 854
   },
   "modelos": {
@@ -22,7 +23,29 @@
           42,
           489
         ]
-      ]
+      ],
+      "validacion_cruzada": {
+        "exactitud": {
+          "media": 0.9174,
+          "desviacion": 0.0169
+        },
+        "precision": {
+          "media": 0.9573,
+          "desviacion": 0.0127
+        },
+        "sensibilidad": {
+          "media": 0.9078,
+          "desviacion": 0.0182
+        },
+        "f1": {
+          "media": 0.9318,
+          "desviacion": 0.0143
+        },
+        "roc_auc": {
+          "media": 0.9662,
+          "desviacion": 0.009
+        }
+      }
     },
     "arbol_decision": {
       "nombre": "Árbol de Decisión",
@@ -40,7 +63,29 @@
           16,
           515
         ]
-      ]
+      ],
+      "validacion_cruzada": {
+        "exactitud": {
+          "media": 0.9687,
+          "desviacion": 0.0067
+        },
+        "precision": {
+          "media": 0.9908,
+          "desviacion": 0.0057
+        },
+        "sensibilidad": {
+          "media": 0.9586,
+          "desviacion": 0.0136
+        },
+        "f1": {
+          "media": 0.9744,
+          "desviacion": 0.0056
+        },
+        "roc_auc": {
+          "media": 0.9921,
+          "desviacion": 0.0025
+        }
+      }
     },
     "bosque_aleatorio": {
       "nombre": "Random Forest",
@@ -48,7 +93,7 @@
       "precision": 0.9866,
       "sensibilidad": 0.9736,
       "f1": 0.9801,
-      "roc_auc": 0.9984,
+      "roc_auc": 0.9983,
       "matriz_confusion": [
         [
           316,
@@ -58,8 +103,37 @@
           14,
           517
         ]
-      ]
+      ],
+      "validacion_cruzada": {
+        "exactitud": {
+          "media": 0.9687,
+          "desviacion": 0.0071
+        },
+        "precision": {
+          "media": 0.9889,
+          "desviacion": 0.0048
+        },
+        "sensibilidad": {
+          "media": 0.9605,
+          "desviacion": 0.0142
+        },
+        "f1": {
+          "media": 0.9744,
+          "desviacion": 0.006
+        },
+        "roc_auc": {
+          "media": 0.9959,
+          "desviacion": 0.0021
+        }
+      }
     }
   },
-  "version": "v1.1-local-es"
+  "validacion_cruzada": {
+    "metodo": "StratifiedKFold",
+    "pliegues": 5,
+    "semilla": 42,
+    "conjunto": "entrenamiento"
+  },
+  "clave_modelo_recomendado": "bosque_aleatorio",
+  "version": "v1.2-pipeline-cv5"
 }

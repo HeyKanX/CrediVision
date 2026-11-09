@@ -57,9 +57,9 @@
                 <div>
                     <p class="eyebrow">Modelo recomendado</p>
                     <h2>{{ modelo_recomendado.nombre }}</h2>
-                    <p>Presenta el mejor F1-score en la evaluación actual: {{ modelo_recomendado.f1|porcentaje }}.</p>
+                    <p>F1 medio en validación cruzada: {{ modelo_recomendado.f1_referencia|porcentaje }}. El ROC-AUC medio resuelve empates.</p>
                 </div>
-                <span class="pill">F1 {{ modelo_recomendado.f1|porcentaje }}</span>
+                <span class="pill">F1 CV {{ modelo_recomendado.f1_referencia|porcentaje }}</span>
             </section>
 
             {% if mensaje_error %}

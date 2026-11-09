@@ -12,7 +12,13 @@ from flask import Flask, abort, flash, redirect, render_template, request, sessi
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from db import conexion
-from train_models import CARACTERISTICAS, CARACTERISTICAS_NUMERICAS, DIRECTORIO_MODELOS, entrenar_modelos
+from train_models import (
+    CARACTERISTICAS,
+    CARACTERISTICAS_NUMERICAS,
+    DIRECTORIO_MODELOS,
+    VERSION_MODELOS,
+    entrenar_modelos,
+)
 
 
 aplicacion = Flask(__name__)
@@ -34,7 +40,10 @@ def garantizar_artefactos() -> dict:
     ruta_metricas = DIRECTORIO_MODELOS / "metricas.json"
     if not ruta_metricas.exists():
         return entrenar_modelos()
-    return json.loads(ruta_metricas.read_text(encoding="utf-8"))
+    metricas = json.loads(ruta_metricas.read_text(encoding="utf-8"))
+    if metricas.get("version") != VERSION_MODELOS:
+        return entrenar_modelos()
+    return metricas
 
 
 def obtener_metricas() -> dict:
@@ -54,12 +63,26 @@ aplicacion.jinja_env.filters["porcentaje"] = a_porcentaje
 
 
 def obtener_modelo_recomendado(metricas: dict) -> dict:
-    """Selecciona el modelo con mejor F1; ROC-AUC resuelve los empates."""
-    clave, datos = max(
-        metricas["modelos"].items(),
-        key=lambda elemento: (elemento[1]["f1"], elemento[1]["roc_auc"]),
-    )
-    return {"clave": clave, **datos}
+    """Recomienda según F1 medio de CV; ROC-AUC medio resuelve los empates."""
+    modelos = metricas["modelos"]
+    clave = metricas.get("clave_modelo_recomendado")
+    if clave not in modelos:
+        clave = max(
+            modelos,
+            key=lambda nombre: (
+                modelos[nombre].get("validacion_cruzada", {}).get("f1", {}).get("media", modelos[nombre]["f1"]),
+                modelos[nombre].get("validacion_cruzada", {}).get("roc_auc", {}).get("media", modelos[nombre]["roc_auc"]),
+            ),
+        )
+    datos = modelos[clave]
+    cv = datos.get("validacion_cruzada", {})
+    return {
+        "clave": clave,
+        **datos,
+        "seleccionado_por_cv": bool(cv),
+        "f1_referencia": cv.get("f1", {}).get("media", datos["f1"]),
+        "roc_auc_referencia": cv.get("roc_auc", {}).get("media", datos["roc_auc"]),
+    }
 
 
 def sincronizar_modelos(metricas: dict) -> dict[str, int]:
@@ -286,7 +309,7 @@ def cerrar_sesion():
 def panel():
     metricas = obtener_metricas()
     modelos = metricas["modelos"]
-    mejor_clave = max(modelos, key=lambda clave: modelos[clave]["f1"])
+    mejor_clave = obtener_modelo_recomendado(metricas)["clave"]
     return render_template(
         "dashboard.html",
         metricas=metricas,
@@ -479,7 +502,7 @@ def comparar_predicciones():
                    p.valor_activos_residenciales, p.valor_activos_comerciales,
                    p.valor_activos_lujo, p.valor_activos_bancarios,
                    m.nombre AS modelo_nombre, m.version AS modelo_version,
-                   m.f1, m.roc_auc
+                   m.f1, m.roc_auc, m.es_recomendado
             FROM dbo.predicciones p
             INNER JOIN dbo.modelos m ON m.id = p.modelo_id
             WHERE p.usuario_id = ? AND p.id IN ({marcadores})
@@ -496,13 +519,13 @@ def comparar_predicciones():
         == tuple(getattr(predicciones[0], campo) for campo in CAMPOS_SOLICITUD)
         for prediccion in predicciones[1:]
     )
-    recomendada = max(predicciones, key=lambda item: (float(item.f1), float(item.roc_auc)))
+    recomendada = next((item for item in predicciones if item.es_recomendado), None)
     return render_template(
         "comparar_predicciones.html",
         predicciones=predicciones,
         mismo_caso=mismo_caso,
-        recomendada_id=recomendada.prediccion_id,
-        modelo_recomendado_nombre=recomendada.modelo_nombre,
+        recomendada_id=recomendada.prediccion_id if recomendada else None,
+        modelo_recomendado_nombre=recomendada.modelo_nombre if recomendada else None,
     )
 
 
